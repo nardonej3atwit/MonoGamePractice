@@ -29,3 +29,4 @@ C:\Users\jishy\Desktop\Coding Projects\Test game engine\MyGame\obj\Debug\net8.0\
 C:\Users\jishy\Desktop\Coding Projects\Test game engine\MyGame\obj\Debug\net8.0\MyGame.pdb
 C:\Users\jishy\Desktop\Coding Projects\Test game engine\MyGame\obj\Debug\net8.0\MyGame.genruntimeconfig.cache
 C:\Users\jishy\Desktop\Coding Projects\Test game engine\MyGame\obj\Debug\net8.0\ref\MyGame.dll
+C:\Users\jishy\Desktop\Coding Projects\Test game engine\MyGame\obj\Debug\net8.0\MyGame.sourcelink.json
