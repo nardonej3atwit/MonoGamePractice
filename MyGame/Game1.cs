@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Data;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -40,6 +41,16 @@ public class Game1 : Game
     private float _shootCooldown = 0.2f;
     private float _currentShootTimer = 0f;
 
+    private List<Enemy> _activeEnemies;
+    private Texture2D _enemySprites;
+    private Rectangle[] enemies;
+    private float _enemySpawnTimer = 0f;
+    private float _enemySpawnInterval = 2f;
+
+    private Texture2D _miscSprites;
+    private Rectangle[] explosions;
+    private bool _gameOver = false;
+
 
     public class Projectile{
         public Vector2 Position;
@@ -55,7 +66,49 @@ public class Game1 : Game
             Position += Velocity * deltaTime; 
         }
     }
+    
+    public class Enemy{
+        public Vector2 Position;
+        public Vector2 Velocity;
+        public Rectangle[] AnimationFrames;
+        public float Lifetime;
+        public float FrameTimer;
+        public float FrameDuration;
+        public int CurrentFrame;
 
+        public Enemy(Vector2 position, Vector2 velocity, Rectangle[] animationFrames, float lifetime = 0f, float frameDuration = 0.2f){
+            Position = position;
+            Velocity = velocity;
+            AnimationFrames = animationFrames;
+            Lifetime = lifetime;
+            CurrentFrame = 0;
+            FrameTimer = 0f;
+            FrameDuration = frameDuration;
+        }
+        public void Update(float deltaTime){
+            Position += Velocity * deltaTime;
+            if(Lifetime >0) {
+                Lifetime -= deltaTime;
+                FrameTimer += deltaTime;
+                if(FrameTimer >= FrameDuration){
+                    FrameTimer -= FrameDuration;
+                    CurrentFrame++;
+                    if(CurrentFrame >= AnimationFrames.Length){
+                        CurrentFrame = AnimationFrames.Length - 1;
+                    }
+                }
+            }
+        }
+        public Rectangle GetCurrentFrame(){
+            return AnimationFrames[CurrentFrame];
+        }
+    }
+
+    private bool checkCollision(Rectangle rect1,Vector2 pos1, Rectangle rect2, Vector2 pos2){
+        Rectangle box1 = new Rectangle((int) pos1.X, (int)pos1.Y, rect1.Width, rect1.Height);
+        Rectangle box2 = new Rectangle((int) pos2.X, (int)pos2.Y, rect2.Width, rect2.Height);
+        return box1.Intersects(box2);
+    }
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -89,7 +142,24 @@ public class Game1 : Game
             new Rectangle (16,0,6,6),
             new Rectangle (0,16,6,6)
         };
+        explosions = new Rectangle[]{
+            new Rectangle(0,16,8,8),
+            new Rectangle(16,24,8,8),
+            new Rectangle(16,8,8,8),
+            new Rectangle(8,32,8,8)
+        };
+        enemies = new Rectangle[]
+        {
+            new Rectangle (48,0,8,8),
+            new Rectangle (56,0,8,8),
+            new Rectangle (64,0,8,8),
+            new Rectangle (72,0,8,8),
+            new Rectangle (80,0,8,8),
+            new Rectangle (88,0,8,8) 
+        };
 
+
+        _activeEnemies = new List<Enemy>();
         _activeProjectiles = new List<Projectile>();
         _graphics.PreferredBackBufferWidth = 256;  
         _graphics.PreferredBackBufferHeight = 512; 
@@ -108,7 +178,9 @@ public class Game1 : Game
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _spriteSheet = Content.Load<Texture2D>("SpaceShooterAssets/SpaceShooterAssetPack_BackGrounds");
             _shipSprites = Content.Load<Texture2D>("SpaceShooterAssets/SpaceShooterAssetPack_Ships");
+            _enemySprites = Content.Load<Texture2D>("SpaceShooterAssets/SpaceShooterAssetPack_Ships");
             _projectileSprites = Content.Load<Texture2D>("SpaceShooterAssets/SpaceShooterAssetPack_Projectiles");
+            _miscSprites = Content.Load<Texture2D>("SpaceShooterAssets/SpaceShooterAssetPack_Miscellaneous");
             Console.WriteLine("Content loaded successfully!");
 
             Rectangle sourceShip = ships[currentShip];
@@ -146,6 +218,8 @@ public class Game1 : Game
         _shipPosition.X = Math.Clamp(_shipPosition.X, gameFrame.X, gameFrame.Right - ships[currentShip].Width);
         _shipPosition.Y = Math.Clamp(_shipPosition.Y, gameFrame.Y, gameFrame.Bottom - ships[currentShip].Height);
 
+
+        //projectiles portion of Update
         _currentShootTimer -= deltaTime;
         if(state.IsKeyDown(Keys.Space) && _currentShootTimer <= 0f)
         {
@@ -160,7 +234,52 @@ public class Game1 : Game
         }
         for(int i = _activeProjectiles.Count - 1; i >= 0; i--){
             _activeProjectiles[i].Update(deltaTime);
-            if(_activeProjectiles[i].Position.Y < 0)_activeProjectiles.RemoveAt(i);
+            if(_activeProjectiles[i].Position.Y < 0)
+            {
+                _activeProjectiles.RemoveAt(i);
+                continue;
+            }
+            for(int j = _activeEnemies.Count -1; j >= 0; j--){
+                if(checkCollision(_activeProjectiles[i].SourceRect, _activeProjectiles[i].Position,_activeEnemies[j].GetCurrentFrame(), _activeEnemies[j].Position))
+                {
+                _activeEnemies[j] = new Enemy(_activeEnemies[j].Position, Vector2.Zero, explosions, 1f,0.2f);
+                _activeProjectiles.RemoveAt(i);
+                break;
+                }
+            } 
+        }
+
+
+        //enemies portion of the update method
+        _enemySpawnTimer -= deltaTime;
+        if(_enemySpawnTimer <= 0f){
+            _enemySpawnTimer = _enemySpawnInterval;
+            Rectangle enemySource = enemies[0];
+            Vector2 enemyPoistion = new Vector2( Random.Shared.Next(0, virtualResolution.X - enemySource.Width), -enemySource.Height);
+            Vector2 enemyVelocity = new Vector2(0,50);
+                        _activeEnemies.Add(new Enemy(enemyPoistion, enemyVelocity, enemies, 0f));
+        }
+
+        for(int i =_activeEnemies.Count - 1; i >= 0; i--){
+            _activeEnemies[i].Update(deltaTime);
+            if(_activeEnemies[i].Position.Y > virtualResolution.Y) _activeEnemies.RemoveAt(i);
+        }
+
+        for(int i = _activeEnemies.Count -1; i>=0; i--){
+            _activeEnemies[i].Update(deltaTime);
+
+            if(_activeEnemies[i].Position.Y > virtualResolution.Y){
+                _activeEnemies.RemoveAt(i);
+                continue;
+            }
+            if(_activeEnemies[i].Lifetime <= 0 && _activeEnemies[i].Lifetime != 0){
+                _activeEnemies.RemoveAt(i);
+            }
+            if(checkCollision(_activeEnemies[i].GetCurrentFrame(), _activeEnemies[i].Position, ships[currentShip], _shipPosition)){
+                _activeEnemies[i] = new Enemy(_activeEnemies[i].Position, Vector2.Zero, explosions, 1f);
+                _gameOver = true;
+            }
+
         }
 
         base.Update(gameTime);
@@ -176,11 +295,21 @@ public class Game1 : Game
         Rectangle sourceShip = ships[currentShip];
 
         _spriteBatch.Draw(_spriteSheet, new Rectangle(0,0, virtualResolution.X, virtualResolution.Y), sourceRect,Color.White);
-        _spriteBatch.Draw(_shipSprites, _shipPosition,sourceShip, Color.White);
-
+        if(!_gameOver)_spriteBatch.Draw(_shipSprites, _shipPosition,sourceShip, Color.White);
+    
         foreach(var projectiles in _activeProjectiles)
         {
             _spriteBatch.Draw(_projectileSprites, projectiles.Position, projectiles.SourceRect,Color.White);
+        }
+        foreach(var enemy in _activeEnemies)
+        {
+            Rectangle frame = enemy.GetCurrentFrame();
+            if(enemy.Lifetime > 0){
+                _spriteBatch.Draw(_projectileSprites, enemy.Position, frame,Color.White);
+            }
+            else{_spriteBatch.Draw(_enemySprites, enemy.Position, frame,Color.White);}
+            
+            
         }
 
         _spriteBatch.End();
