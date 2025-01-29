@@ -238,24 +238,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jishy\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Josh Nardone\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jishy\\Desktop\\Coding Projects\\Test game engine\\MyGame\\MyGame.csproj",
+      "projectUniqueName": "C:\\Users\\Josh Nardone\\Desktop\\Coding-Projects\\MonoGamePractice\\MyGame\\MyGame.csproj",
       "projectName": "MyGame",
-      "projectPath": "C:\\Users\\jishy\\Desktop\\Coding Projects\\Test game engine\\MyGame\\MyGame.csproj",
-      "packagesPath": "C:\\Users\\jishy\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jishy\\Desktop\\Coding Projects\\Test game engine\\MyGame\\obj\\",
+      "projectPath": "C:\\Users\\Josh Nardone\\Desktop\\Coding-Projects\\MonoGamePractice\\MyGame\\MyGame.csproj",
+      "packagesPath": "C:\\Users\\Josh Nardone\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Josh Nardone\\Desktop\\Coding-Projects\\MonoGamePractice\\MyGame\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\jishy\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+        "C:\\Users\\Josh Nardone\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

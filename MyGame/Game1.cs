@@ -8,9 +8,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace MyGame;
 
-
-
-
 public class Game1 : Game
 {
     
